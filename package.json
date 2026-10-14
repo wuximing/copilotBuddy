@@ -1,0 +1,78 @@
+{
+  "name": "copilot-buddy",
+  "displayName": "WorkBuddy for Copilot Chat",
+  "description": "Bring the models in your signed-in WorkBuddy / WorkBuddy AI desktop app into VS Code Copilot Chat. Zero configuration: reuses the desktop app login and credits.",
+  "publisher": "wuximing",
+  "version": "0.4.0",
+  "license": "MIT",
+  "icon": "assets/icon/icon.png",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languageModelChatProviders": [
+      {
+        "vendor": "workbuddy",
+        "displayName": "WorkBuddy",
+        "managementCommand": "copilotBuddy.manage"
+      },
+      {
+        "vendor": "workbuddy-ai",
+        "displayName": "WorkBuddy AI",
+        "managementCommand": "copilotBuddy.manageAI"
+      }
+    ],
+    "commands": [
+      {
+        "command": "copilotBuddy.manage",
+        "title": "WorkBuddy: Manage (Status, Credits, Sign-out)"
+      },
+      {
+        "command": "copilotBuddy.manageAI",
+        "title": "WorkBuddy AI: Manage (Status, Credits, Sign-out)"
+      }
+    ],
+    "configuration": {
+      "title": "WorkBuddy for Copilot Chat",
+      "properties": {
+        "workbuddy.authFile": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Explicit path to the domestic WorkBuddy desktop app's auth file (`workbuddy-desktop.info`). Leave empty to auto-discover. Overrides the `WORKBUDDY_AUTH_FILE` environment variable."
+        },
+        "workbuddy.aiAuthFile": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Explicit path to the WorkBuddy AI (international) desktop app's auth file (`workbuddy-desktop-ai.info`). Leave empty to auto-discover. Overrides the `WORKBUDDY_AI_AUTH_FILE` environment variable."
+        },
+        "workbuddy.electronBinary": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Explicit path to the domestic WorkBuddy desktop app's executable, used to decrypt WorkBuddy 5.6+ credentials at rest. Leave empty to auto-discover. Overrides the `WORKBUDDY_ELECTRON_BIN` environment variable."
+        },
+        "workbuddy.aiElectronBinary": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Explicit path to the WorkBuddy AI (international) desktop app's executable, used to decrypt WorkBuddy 5.6+ credentials at rest. Leave empty to auto-discover. Overrides the `WORKBUDDY_AI_ELECTRON_BIN` environment variable."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -p ./ --watch",
+    "test": "node dist/test.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.104.0",
+    "@vscode/vsce": "^3.2.0",
+    "typescript": "^5.7.0"
+  }
+}

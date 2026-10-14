@@ -1,0 +1,13 @@
+.vscode/**
+src/**
+reference/**
+node_modules/**
+assets/icon/raw/**
+dist/test.js
+dist/livetest.js
+dist/**/*.map
+tsconfig.json
+.gitignore
+*.vsix
+dsh-acl-recovery/**
+.npm-cache/**

@@ -192,6 +192,9 @@ function eq<T>(name: string, actual: T, expected: T): void {
   const cn = JSON.parse(prepareCnChatBody(JSON.stringify({ model: 'm', reasoning_effort: 'off', messages: [{ role: 'user', content: 'hi' }] }))) as Record<string, unknown>
   check('cn strips off', !('reasoning_effort' in cn))
   eq('cn keeps system position', (cn['messages'] as Array<{ role: string }>)[0]!.role, 'user')
+  // The CN gateway rejects non-streaming requests with 400 code 11101, so
+  // `stream: true` must be injected even when the caller omitted it.
+  eq('cn forces stream', cn['stream'], true)
 
   const intl = JSON.parse(prepareInternationalChatBody(JSON.stringify({ model: 'm', messages: [{ role: 'user', content: 'hi' }] }))) as Record<string, unknown>
   eq('intl prepends system', (intl['messages'] as Array<{ role: string }>)[0]!.role, 'system')

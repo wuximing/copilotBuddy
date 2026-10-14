@@ -433,15 +433,21 @@ function dropUnsupportedEffort(obj: Record<string, unknown>): void {
   if (obj['reasoning_effort'] === 'off') delete obj['reasoning_effort']
 }
 
-/** Prepare a body for the **CN** endpoint: the shared `off` strip only. */
+/**
+ * Prepare a body for the **CN** endpoint: everything {@link prepareChatBody}
+ * does (force `stream: true` — the CN gateway rejects non-streaming with 400
+ * code 11101, rewrite `developer`, flatten `tool_choice`) plus the shared
+ * `off` strip.
+ */
 export function prepareCnChatBody(source: string): string {
+  const prepared = prepareChatBody(source)
   let body: unknown
   try {
-    body = JSON.parse(source)
+    body = JSON.parse(prepared)
   } catch {
-    return source
+    return prepared
   }
-  if (typeof body !== 'object' || body === null || Array.isArray(body)) return source
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) return prepared
   dropUnsupportedEffort(body as Record<string, unknown>)
   return JSON.stringify(body)
 }

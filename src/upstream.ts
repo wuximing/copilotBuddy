@@ -693,10 +693,18 @@ export function priceCategoryFor(multiplier: number | undefined): WorkBuddyPrice
  * parameter may silently ignore the value, so an undeclared model keeps
  * WorkBuddy's own default effort instead of offering a menu that does
  * nothing.
+ *
+ * Exception: a model that declares `supportsReasoning` with a default
+ * effort but no `supportedEfforts` list (the CN catalog's `glm-5.3` shape:
+ * `reasoning:{effort:"medium"}`) does get the full standard set — the menu
+ * needs a non-empty `enum` to render at all, and the upstream accepts the
+ * standard values on every such model measured so far.
  */
 export function supportedEffortsFor(model: WorkBuddyUpstreamModel): readonly WorkBuddyEffort[] | undefined {
   const efforts = model.reasoning?.supportedEfforts
-  return efforts === undefined || efforts.length === 0 ? undefined : efforts
+  if (efforts !== undefined && efforts.length > 0) return efforts
+  if (model.reasoning?.supports === true && model.reasoning.defaultEffort !== undefined) return EFFORT_VALUES
+  return undefined
 }
 
 /**

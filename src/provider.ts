@@ -202,8 +202,12 @@ export class WorkBuddyChatProvider implements vscode.LanguageModelChatProvider {
           properties: {
             reasoningEffort: {
               type: 'string',
+              // `group: 'navigation'` is what the model picker matches on
+              // (getModelConfigProperty skips properties without its group).
+              group: 'navigation',
               title: 'Thinking Effort',
               enum: [...efforts],
+              ...model.reasoning?.defaultEffort === undefined ? {} : { default: model.reasoning.defaultEffort },
             },
           },
         },

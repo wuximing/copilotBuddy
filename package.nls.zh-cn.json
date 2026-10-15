@@ -1,0 +1,9 @@
+{
+  "description": "把已登录的 WorkBuddy / WorkBuddy AI 桌面 App 中的模型接入 VS Code Copilot Chat。零配置：复用桌面 App 的登录与积分。",
+  "command.manage.title": "WorkBuddy：管理（状态、积分、退出登录）",
+  "command.manageAI.title": "WorkBuddy AI：管理（状态、积分、退出登录）",
+  "setting.authFile": "国内版 WorkBuddy 桌面 App 登录文件的显式路径（`workbuddy-desktop.info`）。留空则自动发现。覆盖 `WORKBUDDY_AUTH_FILE` 环境变量。",
+  "setting.aiAuthFile": "WorkBuddy AI（国际版）桌面 App 登录文件的显式路径（`workbuddy-desktop-ai.info`）。留空则自动发现。覆盖 `WORKBUDDY_AI_AUTH_FILE` 环境变量。",
+  "setting.electronBinary": "国内版 WorkBuddy 桌面 App 可执行文件的显式路径，用于解密 WorkBuddy 5.6+ 的静态加密凭据。留空则自动发现。覆盖 `WORKBUDDY_ELECTRON_BIN` 环境变量。",
+  "setting.aiElectronBinary": "WorkBuddy AI（国际版）桌面 App 可执行文件的显式路径，用于解密 WorkBuddy 5.6+ 的静态加密凭据。留空则自动发现。覆盖 `WORKBUDDY_AI_ELECTRON_BIN` 环境变量。"
+}

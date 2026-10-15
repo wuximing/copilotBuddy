@@ -170,8 +170,8 @@ export class WorkBuddyChatProvider implements vscode.LanguageModelChatProvider {
       version: '1',
       maxInputTokens: maxInput,
       maxOutputTokens: model.maxTokens,
-      tooltip: `${model.id} · context ${String(model.contextWindow)} · max output ${String(model.maxTokens)} · via ${this.variant.displayName}`
-        + (tags === '' ? '' : ` · credits ${tags}`),
+      tooltip: vscode.l10n.t('{0} · context {1} · max output {2} · via {3}', model.id, String(model.contextWindow), String(model.maxTokens), this.variant.displayName)
+        + (tags === '' ? '' : vscode.l10n.t(' · credits {0}', tags)),
       ...tags === '' ? {} : { detail: tags },
       capabilities: {
         imageInput: model.supportsImages,
@@ -205,7 +205,7 @@ export class WorkBuddyChatProvider implements vscode.LanguageModelChatProvider {
               // `group: 'navigation'` is what the model picker matches on
               // (getModelConfigProperty skips properties without its group).
               group: 'navigation',
-              title: 'Thinking Effort',
+              title: vscode.l10n.t('Thinking Effort'),
               enum: [...efforts],
               ...model.reasoning?.defaultEffort === undefined ? {} : { default: model.reasoning.defaultEffort },
             },
@@ -255,7 +255,7 @@ export class WorkBuddyChatProvider implements vscode.LanguageModelChatProvider {
     try {
       if (!result.ok) {
         throw new Error(
-          `WorkBuddy ${result.kind} (http ${String(result.status)}): ${openAiErrorDetail(result)}`,
+          vscode.l10n.t('WorkBuddy {0} (http {1}): {2}', result.kind, String(result.status), openAiErrorDetail(result)),
         )
       }
       const toolCalls = new Map<number, ToolCallAccumulator>()
@@ -270,7 +270,7 @@ export class WorkBuddyChatProvider implements vscode.LanguageModelChatProvider {
       }
 
       const bodyStream = result.response.body
-      if (bodyStream === null) throw new Error('WorkBuddy upstream returned an empty stream')
+      if (bodyStream === null) throw new Error(vscode.l10n.t('WorkBuddy upstream returned an empty stream'))
       for await (const payload of iterateSseData(bodyStream)) {
         let chunk: OpenAiChunk
         try {
@@ -280,7 +280,7 @@ export class WorkBuddyChatProvider implements vscode.LanguageModelChatProvider {
         }
         if (chunk.error !== undefined) {
           const message = typeof chunk.error.message === 'string' ? chunk.error.message : JSON.stringify(chunk.error)
-          throw new Error(`WorkBuddy stream error: ${message}`)
+          throw new Error(vscode.l10n.t('WorkBuddy stream error: {0}', message))
         }
         const choice = chunk.choices?.[0]
         if (choice === undefined) continue

@@ -1,0 +1,9 @@
+{
+  "description": "Bring the models in your signed-in WorkBuddy / WorkBuddy AI desktop app into VS Code Copilot Chat. Zero configuration: reuses the desktop app login and credits.",
+  "command.manage.title": "WorkBuddy: Manage (Status, Credits, Sign-out)",
+  "command.manageAI.title": "WorkBuddy AI: Manage (Status, Credits, Sign-out)",
+  "setting.authFile": "Explicit path to the domestic WorkBuddy desktop app's auth file (`workbuddy-desktop.info`). Leave empty to auto-discover. Overrides the `WORKBUDDY_AUTH_FILE` environment variable.",
+  "setting.aiAuthFile": "Explicit path to the WorkBuddy AI (international) desktop app's auth file (`workbuddy-desktop-ai.info`). Leave empty to auto-discover. Overrides the `WORKBUDDY_AI_AUTH_FILE` environment variable.",
+  "setting.electronBinary": "Explicit path to the domestic WorkBuddy desktop app's executable, used to decrypt WorkBuddy 5.6+ credentials at rest. Leave empty to auto-discover. Overrides the `WORKBUDDY_ELECTRON_BIN` environment variable.",
+  "setting.aiElectronBinary": "Explicit path to the WorkBuddy AI (international) desktop app's executable, used to decrypt WorkBuddy 5.6+ credentials at rest. Leave empty to auto-discover. Overrides the `WORKBUDDY_AI_ELECTRON_BIN` environment variable."
+}

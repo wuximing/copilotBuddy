@@ -130,7 +130,7 @@ class CopilotBuddyExtension implements vscode.Disposable {
       segments.push(`${label}·${this.formatCredits(entry)}`)
     }
     if (segments.length === 0) {
-      this.statusBarItem.text = '$(plug) WorkBuddy: signed out'
+      this.statusBarItem.text = `$(plug) ${vscode.l10n.t('WorkBuddy: signed out')}`
     } else {
       this.statusBarItem.text = `$(bolt) ${segments.join('  ')}`
     }
@@ -145,28 +145,30 @@ class CopilotBuddyExtension implements vscode.Disposable {
       const entry = this.credits.get(stack.variant.id)
       lines.push(`**${stack.variant.displayName}**`)
       if (!state.signedIn) {
-        lines.push(`- Status: signed out${state.reason === undefined ? '' : ` — ${state.reason}`}`)
+        lines.push(state.reason === undefined
+          ? `- ${vscode.l10n.t('Status: signed out')}`
+          : `- ${vscode.l10n.t('Status: signed out — {0}', state.reason)}`)
       } else {
-        lines.push(`- Status: signed in (${state.modelCount} models, catalog: ${state.catalogSource})`)
-        if (entry?.error !== undefined) lines.push(`- Credits: unavailable — ${entry.error}`)
+        lines.push(`- ${vscode.l10n.t('Status: signed in ({0} models, catalog: {1})', String(state.modelCount), state.catalogSource)}`)
+        if (entry?.error !== undefined) lines.push(`- ${vscode.l10n.t('Credits: unavailable — {0}', entry.error)}`)
         else if (entry?.credits !== undefined) {
           const credits = entry.credits
           lines.push(credits.unlimited === true
-            ? '- Credits: ∞ (enterprise, uncapped)'
-            : `- Credits: ${credits.total.toLocaleString()}`)
+            ? `- ${vscode.l10n.t('Credits: ∞ (enterprise, uncapped)')}`
+            : `- ${vscode.l10n.t('Credits: {0}', credits.total.toLocaleString())}`)
           for (const account of credits.accounts) {
             lines.push(`  - ${account.packageName}: ${account.unlimited === true ? '∞' : account.remain.toLocaleString()} / ${account.unlimited === true ? '—' : account.size.toLocaleString()}`)
           }
           const expiry = credits.expiry
           if (expiry !== undefined && expiry.within7d.total > 0) {
-            lines.push(`- Expiring within 7 days: ${expiry.within7d.total.toLocaleString()}`)
+            lines.push(`- ${vscode.l10n.t('Expiring within 7 days: {0}', expiry.within7d.total.toLocaleString())}`)
           }
-          if (credits.cycleResetTime !== undefined) lines.push(`- Cycle resets: ${credits.cycleResetTime}`)
+          if (credits.cycleResetTime !== undefined) lines.push(`- ${vscode.l10n.t('Cycle resets: {0}', credits.cycleResetTime)}`)
         }
       }
       lines.push('')
     }
-    lines.push('$(sync) Click to refresh · models appear in the Copilot Chat model picker')
+    lines.push(`$(sync) ${vscode.l10n.t('Click to refresh · models appear in the Copilot Chat model picker')}`)
     const markdown = new vscode.MarkdownString(lines.join('\n'))
     markdown.isTrusted = false
     return markdown
@@ -179,30 +181,34 @@ class CopilotBuddyExtension implements vscode.Disposable {
     const state = stack.provider.state
     const entry = this.credits.get(variant.id)
     const statusLine = state.signedIn
-      ? `Signed in${state.modelCount > 0 ? ` · ${String(state.modelCount)} models (${state.catalogSource})` : ''}`
-      : `Signed out${state.reason === undefined ? '' : ` — ${state.reason}`}`
+      ? (state.modelCount > 0
+        ? vscode.l10n.t('Signed in · {0} models ({1})', String(state.modelCount), state.catalogSource)
+        : vscode.l10n.t('Signed in'))
+      : (state.reason === undefined
+        ? vscode.l10n.t('Signed out')
+        : vscode.l10n.t('Signed out — {0}', state.reason))
     const creditsLine = entry?.error !== undefined
-      ? `Credits unavailable — ${entry.error}`
+      ? vscode.l10n.t('Credits: unavailable — {0}', entry.error)
       : entry?.credits === undefined
-        ? 'Credits: not loaded yet'
+        ? vscode.l10n.t('Credits: not loaded yet')
         : entry.credits.unlimited === true
-          ? 'Credits: ∞ (enterprise, uncapped)'
-          : `Credits: ${entry.credits.total.toLocaleString()}`
+          ? vscode.l10n.t('Credits: ∞ (enterprise, uncapped)')
+          : vscode.l10n.t('Credits: {0}', entry.credits.total.toLocaleString())
     const pick = await vscode.window.showQuickPick([
       {
-        label: `$(refresh) Refresh models and credits`,
-        description: 'Re-read the sign-in, catalog, and balance',
+        label: `$(refresh) ${vscode.l10n.t('Refresh models and credits')}`,
+        description: vscode.l10n.t('Re-read the sign-in, catalog, and balance'),
         detail: `${statusLine}\n${creditsLine}`,
         action: 'refresh',
       },
       {
-        label: `$(trash) Remove this extension's stored credential copy`,
-        description: 'The desktop app keeps its own sign-in; this only forgets token refreshes',
+        label: `$(trash) ${vscode.l10n.t("Remove this extension's stored credential copy")}`,
+        description: vscode.l10n.t('The desktop app keeps its own sign-in; this only forgets token refreshes'),
         action: 'logout',
       },
       {
-        label: `$(copy) Copy diagnostics`,
-        description: 'Sign-in, catalog, and credits state (never tokens) for issue reports',
+        label: `$(copy) ${vscode.l10n.t('Copy diagnostics')}`,
+        description: vscode.l10n.t('Sign-in, catalog, and credits state (never tokens) for issue reports'),
         action: 'diagnostics',
       },
     ], { placeHolder: `${variant.displayName} — ${statusLine}` })
@@ -217,13 +223,13 @@ class CopilotBuddyExtension implements vscode.Disposable {
         this.credits.set(variant.id, { error: error instanceof Error ? error.message : String(error) })
       }
       this.updateStatusBar()
-      void vscode.window.showInformationMessage(`${variant.displayName}: refreshed.`)
+      void vscode.window.showInformationMessage(vscode.l10n.t('{0}: refreshed.', variant.displayName))
     } else if (pick.action === 'logout') {
       await stack.store.logout()
       await stack.provider.reload()
       this.credits.set(variant.id, {})
       this.updateStatusBar()
-      void vscode.window.showInformationMessage(`${variant.displayName}: the extension's stored credential copy was removed. The desktop app's own sign-in is untouched.`)
+      void vscode.window.showInformationMessage(vscode.l10n.t("{0}: the extension's stored credential copy was removed. The desktop app's own sign-in is untouched.", variant.displayName))
     } else if (pick.action === 'diagnostics') {
       const diagnostics = {
         extension: 'copilot-buddy',
@@ -247,7 +253,7 @@ class CopilotBuddyExtension implements vscode.Disposable {
         electronHelperPath: 'see settings',
       }
       await vscode.env.clipboard.writeText(JSON.stringify(diagnostics, null, 2))
-      void vscode.window.showInformationMessage(`${variant.displayName}: diagnostics copied to the clipboard (no tokens included).`)
+      void vscode.window.showInformationMessage(vscode.l10n.t('{0}: diagnostics copied to the clipboard (no tokens included).', variant.displayName))
     }
   }
 

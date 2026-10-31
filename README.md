@@ -60,7 +60,7 @@ code --install-extension copilot-buddy-0.1.0.vsix
 2. **解密**：5.6+ 的令牌字段是 `{$wbEncrypted:1, envelope}` 信封（AES-256-GCM，AAD 为 App 私有的 `WBEV1` 构造）；解密密钥 = sha256(App 私有 binding 返回的 `atRestSecretKey`)，通过运行 App 自己的二进制（`ELECTRON_RUN_AS_NODE=1` + `-e` 单行脚本调 `electron_browser_workbuddy_storage.loggerGet()`）获取。二进制定位顺序：显式配置 → 平台默认路径 → Windows 卸载注册表（含非 ASCII 输出的 PowerShell 5.1 UTF-8 兜底）→ macOS Spotlight
 3. **令牌刷新**：到期前 5 分钟用 refresh token 自动续期，续期结果存扩展自留副本（globalStorage），桌面 App 文件只读不动；桌面文件是身份权威——账号切换后旧副本自动失效
 4. **模型目录**：`/v3/config`（产品文档），国内版用 CLI 形态 UA、国际版用 App 形态 UA（`WorkBuddyAI/<v>`）；取 `cli` agent 名册 ∩ 可用行；拉取失败时降级到本账号上次成功目录（globalStorage 缓存）
-5. **对话**：`/v2/chat/completions`（强制流式 + `developer→system` 角色改写 + `tool_choice` 字符串化 + 剥离 `off` 档位；国际版首条消息必须为 system，自动补位）
+5. **对话**：`/v2/chat/completions`（强制流式 + `developer→system` 角色改写 + `tool_choice` 字符串化 + 剥离 `off` 档位；每次请求新生成会话身份三件套 `X-Conversation-ID` / `-Request-ID` / `-Message-ID`——国际版缺它会直接 `400 / code 11128`；国际版首条消息必须为 system，自动补位）
 6. **积分**：个人版走 `get-user-resource`，国内企业账号走 `get-enterprise-user-usage`（周期额度）
 
 ## 已知限制

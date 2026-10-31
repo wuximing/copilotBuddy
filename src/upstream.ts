@@ -10,6 +10,7 @@
  * observed to branch on the version number.
  */
 
+import { randomUUID } from 'node:crypto'
 import type { WorkBuddyCredential } from './auth.js'
 
 /** WorkBuddy region selected by the credential's login domain. */
@@ -300,14 +301,40 @@ function appCatalogUserAgent(region: WorkBuddyRegion): string {
 }
 
 /**
+ * The conversation-identity triple the chat endpoint requires (dsh-connect-workbuddy
+ * 4.6.3, measured 2026-10-16 on the international gateway).
+ *
+ * Without it every step is refused with business code 11128 / `conversation id
+ * missing`, and the missing-system-prompt rule is NOT a substitute: the two
+ * gates are independent and both must hold. `X-Conversation-ID` alone still
+ * fails — the request and message ids are needed alongside it.
+ *
+ * The gateway does not verify where these ids come from, but each is still
+ * generated per request: reusing one value would claim a conversation identity
+ * this extension does not have.
+ *
+ * Sent to BOTH regions on purpose. The CN gateway tolerates their absence, and
+ * a header that only ever goes out on one side is exactly how a defect becomes
+ * international-only and invisible from the CN side.
+ */
+function conversationHeaders(): Record<string, string> {
+  return {
+    'X-Conversation-ID': randomUUID(),
+    'X-Conversation-Request-ID': randomUUID(),
+    'X-Conversation-Message-ID': randomUUID(),
+  }
+}
+
+/**
  * Chat request headers, including the X-No-* conventions the official CLI
  * uses. Chat requests never carry the refresh token.
  */
-function chatHeaders(credential: WorkBuddyCredential): Record<string, string> {
+export function chatHeaders(credential: WorkBuddyCredential): Record<string, string> {
   const region = regionOf(credential.domain)
   return {
     ...commonHeaders(credential),
     'User-Agent': chatUserAgent(region),
+    ...conversationHeaders(),
     'Content-Type': 'application/json',
     ...credential.uid === '' ? { 'X-No-User-Id': '1' } : { 'X-User-Id': credential.uid },
     ...credential.enterpriseId === undefined || credential.enterpriseId === ''

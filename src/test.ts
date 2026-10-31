@@ -17,6 +17,7 @@ import {
 import { parseWorkBuddyAuth } from './auth.js'
 import { convertTools, convertMessages, flattenToolResultContent } from './convert.js'
 import {
+  chatHeaders,
   iterateSseData,
   modelCostLabel,
   modelMultiplier,
@@ -200,6 +201,29 @@ function eq<T>(name: string, actual: T, expected: T): void {
   eq('intl prepends system', (intl['messages'] as Array<{ role: string }>)[0]!.role, 'system')
   const intlKeeps = JSON.parse(prepareInternationalChatBody(JSON.stringify({ model: 'm', messages: [{ role: 'system', content: 'custom' }, { role: 'user', content: 'hi' }] }))) as Record<string, unknown>
   eq('intl keeps existing system', (intlKeeps['messages'] as Array<{ role: string, content: string }>)[0]!.content, 'custom')
+}
+
+// --- chat headers: the conversation-identity triple -------------------------------
+
+{
+  // The international gateway refuses every step with business code 11128 /
+  // `conversation id missing` unless all three ids are present (dsh-connect-workbuddy
+  // 4.6.3, measured 2026-10-16).
+  const credential = {
+    accessToken: 'a', refreshToken: 'r', expiresAtMs: 0,
+    domain: 'workbuddy.ai', uid: '', source: 'desktop' as const,
+  }
+  const headers = chatHeaders(credential)
+  const ids = ['X-Conversation-ID', 'X-Conversation-Request-ID', 'X-Conversation-Message-ID']
+  for (const name of ids) {
+    check(`chat header ${name}`, /^[0-9a-f-]{36}$/u.test(headers[name] ?? ''))
+  }
+  check('chat header ids distinct', new Set(ids.map(name => headers[name])).size === 3)
+  check('chat header ids per request', new Set(ids.map(name => chatHeaders(credential)[name])).size === 3)
+  // The CN gateway tolerates their absence today; they are sent anyway so the
+  // two regions cannot diverge on a header only one of them needs.
+  check('cn chat also carries ids', 'X-Conversation-ID' in chatHeaders({ ...credential, domain: 'workbuddy.cn' }))
+  check('chat never carries refresh token', headers['X-Refresh-Token'] === undefined)
 }
 
 // --- credits helpers ------------------------------------------------------------
